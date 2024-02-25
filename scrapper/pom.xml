@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.wiremock</groupId>
-            <artifactId>wiremock</artifactId>
+            <artifactId>wiremock-standalone</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -115,6 +115,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.java</groupId>
+            <artifactId>root</artifactId>
+            <version>0.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
