@@ -116,12 +116,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
-        <dependency>
-            <groupId>edu.java</groupId>
-            <artifactId>root</artifactId>
-            <version>0.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
