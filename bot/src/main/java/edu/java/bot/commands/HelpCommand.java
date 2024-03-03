@@ -8,12 +8,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class HelpCommand implements Command {
-    private final UserData userData;
-
-    @Autowired
-    public HelpCommand(UserData userData) {
-        this.userData = userData;
-    }
 
     @Override
     public String command() {

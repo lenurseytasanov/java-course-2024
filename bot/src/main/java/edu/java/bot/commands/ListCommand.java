@@ -2,18 +2,22 @@ package edu.java.bot.commands;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.ScrapperClient;
 import edu.java.bot.UserData;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import edu.java.dto.LinkResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ListCommand implements Command {
-    private final UserData userData;
+    private final ScrapperClient scrapperClient;
 
     @Autowired
-    public ListCommand(UserData userData) {
-        this.userData = userData;
+    public ListCommand(ScrapperClient scrapperClient) {
+        this.scrapperClient = scrapperClient;
     }
 
     @Override
@@ -28,17 +32,19 @@ public class ListCommand implements Command {
 
     @Override
     public SendMessage handle(Update update) {
-        String user = update.message().from().username();
         long chatId = update.message().chat().id();
 
-        Set<String> links = userData.getData().get(user);
+        List<String> links = Arrays.stream(scrapperClient.getLinks(chatId).links())
+            .map(linkResponse -> linkResponse.url().toString())
+            .toList();
 
-        return new SendMessage(chatId, "Ресурсы: %s".formatted(String.join(", ", links)));
+        return new SendMessage(chatId, "Отслеживаются: %s".formatted(String.join(", ", links)));
     }
 
     @Override
     public boolean supports(Update update) {
-        String user = update.message().from().username();
-        return userData.getData().containsKey(user);
+        long chatId = update.message().chat().id();
+
+        return scrapperClient.getLinks(chatId) != null;
     }
 }
