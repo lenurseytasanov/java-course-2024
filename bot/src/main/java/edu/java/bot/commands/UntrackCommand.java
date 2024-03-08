@@ -2,17 +2,18 @@ package edu.java.bot.commands;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.UserData;
+import edu.java.bot.ScrapperClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UntrackCommand implements Command {
-    private final UserData userData;
+
+    private final ScrapperClient scrapperClient;
 
     @Autowired
-    public UntrackCommand(UserData userData) {
-        this.userData = userData;
+    public UntrackCommand(ScrapperClient userData) {
+        this.scrapperClient = userData;
     }
 
     @Override
@@ -27,7 +28,6 @@ public class UntrackCommand implements Command {
 
     @Override
     public SendMessage handle(Update update) {
-        String user = update.message().from().username();
         long chatId = update.message().chat().id();
 
         if (update.message().text().split(" ").length < 2) {
@@ -35,17 +35,20 @@ public class UntrackCommand implements Command {
         }
         String link = update.message().text().split(" ")[1];
 
-        if (!userData.getData().get(user).contains(link)) {
-            return new SendMessage(chatId, "Ресурс не отслеживается");
-        }
-
-        userData.getData().get(user).remove(link);
+        scrapperClient.removeLink(chatId, link).block();
         return new SendMessage(chatId, "Ресурс %s удален.".formatted(link));
     }
 
     @Override
     public boolean supports(Update update) {
-        String user = update.message().from().username();
-        return userData.getData().containsKey(user);
+        long chatId = update.message().chat().id();
+
+        try {
+            scrapperClient.getLinks(chatId).block();
+        } catch (RuntimeException ex) {
+            return false;
+        }
+
+        return true;
     }
 }

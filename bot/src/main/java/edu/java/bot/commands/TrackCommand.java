@@ -2,17 +2,18 @@ package edu.java.bot.commands;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.UserData;
+import edu.java.bot.ScrapperClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TrackCommand implements Command {
-    private final UserData userData;
+
+    private final ScrapperClient scrapperClient;
 
     @Autowired
-    public TrackCommand(UserData userData) {
-        this.userData = userData;
+    public TrackCommand(ScrapperClient scrapperClient) {
+        this.scrapperClient = scrapperClient;
     }
 
     @Override
@@ -27,7 +28,6 @@ public class TrackCommand implements Command {
 
     @Override
     public SendMessage handle(Update update) {
-        String user = update.message().from().username();
         long chatId = update.message().chat().id();
 
         if (update.message().text().split(" ").length < 2) {
@@ -35,17 +35,20 @@ public class TrackCommand implements Command {
         }
         String link = update.message().text().split(" ")[1];
 
-        if (userData.getData().get(user).contains(link)) {
-            return new SendMessage(chatId, "Ресурс уже отслеживается");
-        }
-
-        userData.getData().get(user).add(link);
+        scrapperClient.addLink(chatId, link).block();
         return new SendMessage(chatId, "Ресурс %s добавлен.".formatted(link));
     }
 
     @Override
     public boolean supports(Update update) {
-        String user = update.message().from().username();
-        return userData.getData().containsKey(user);
+        long chatId = update.message().chat().id();
+
+        try {
+            scrapperClient.getLinks(chatId).block();
+        } catch (RuntimeException ex) {
+            return false;
+        }
+
+        return true;
     }
 }

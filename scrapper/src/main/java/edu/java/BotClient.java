@@ -1,21 +1,26 @@
 package edu.java;
 
+import edu.java.configuration.ApplicationConfig;
 import edu.java.dto.LinkUpdateRequest;
-import edu.java.github.GitHubResponse;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class BotClient {
 
     private final WebClient webClient;
 
-    public BotClient(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost").build();
+    @Autowired(required = false)
+    public BotClient(WebClient.Builder webClientBuilder, ApplicationConfig config) {
+        this(webClientBuilder, config.botClientBaseUrl());
+    }
+
+    @Autowired(required = false)
+    public BotClient(WebClient.Builder webClientBuilder, String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
     public void sendUpdate(LinkUpdateRequest linkUpdateRequest) {

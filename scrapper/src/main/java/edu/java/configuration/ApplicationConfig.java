@@ -9,9 +9,14 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "app", ignoreUnknownFields = true)
 public record ApplicationConfig(
+    @NotNull @Bean
+    Scheduler scheduler,
     @NotNull
-    @Bean
-    Scheduler scheduler
+    String githubBaseUrl,
+    @NotNull
+    String stackoverflowBaseUrl,
+    @NotNull
+    String botClientBaseUrl
 ) {
     public record Scheduler(boolean enable, @NotNull Duration interval, @NotNull Duration forceCheckDelay) {
     }

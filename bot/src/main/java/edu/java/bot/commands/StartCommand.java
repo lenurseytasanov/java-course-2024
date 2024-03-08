@@ -2,19 +2,18 @@ package edu.java.bot.commands;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.UserData;
-import java.util.HashSet;
+import edu.java.bot.ScrapperClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StartCommand implements Command {
 
-    private final UserData userData;
+    private final ScrapperClient scrapperClient;
 
     @Autowired
-    public StartCommand(UserData userData) {
-        this.userData = userData;
+    public StartCommand(ScrapperClient scrapperClient) {
+        this.scrapperClient = scrapperClient;
     }
 
     @Override
@@ -24,21 +23,16 @@ public class StartCommand implements Command {
 
     @Override
     public String description() {
-        return "register user";
+        return "register chat";
     }
 
     @Override
     public SendMessage handle(Update update) {
-        String user = update.message().from().username();
         long chatId = update.message().chat().id();
 
-        if (userData.getData().containsKey(user)) {
-            return new SendMessage(chatId, "Пользователь уже существует");
-        }
+        String message = scrapperClient.addChat(chatId);
 
-        userData.getData().put(user, new HashSet<>());
-
-        return new SendMessage(chatId, "Пользователь %s зарегистрирован.".formatted(user));
+        return new SendMessage(chatId, message);
     }
 
     @Override

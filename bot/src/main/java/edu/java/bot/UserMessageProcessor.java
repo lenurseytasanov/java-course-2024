@@ -14,7 +14,7 @@ public class UserMessageProcessor {
 
     public static final String UNKNOWN_COMMAND = "Неизвестная команда";
 
-    public static final String UNAUTHORISED = "Пользователь не зарегистрирован";
+    public static final String UNAUTHORISED = "Чат не зарегистрирован";
 
     @Autowired
     public UserMessageProcessor(Map<String, Command> commands) {

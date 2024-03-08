@@ -1,69 +1,91 @@
 package edu.java.bot;
 
+import edu.java.bot.configuration.ApplicationConfig;
 import edu.java.dto.LinkResponse;
-import edu.java.dto.LinkUpdateRequest;
 import edu.java.dto.ListLinksResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import reactor.core.publisher.Mono;
 
+@Service
 public class ScrapperClient {
     private final WebClient webClient;
 
-    public ScrapperClient(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost").build();
+    private static final String DEFAULT_CHAT_PATH = "/tg-chat/%d";
+
+    private static final String DEFAULT_LINKS_PATH = "/links";
+
+    private static final String DEFAULT_LINKS_HEADER = "Tg-Chat-Id";
+
+    private static final String DEFAULT_LINKS_BODY = """
+            {
+                "link": "%s"
+            }""";
+
+    @Autowired(required = false)
+    public ScrapperClient(WebClient.Builder webClientBuilder, ApplicationConfig config) {
+        this(webClientBuilder, config.scrapperClientBaseUrl());
     }
 
-    public void addChat(long id) {
-        this.webClient.post()
-            .uri("/tg-chat/%d".formatted(id))
-            .retrieve();
+    @Autowired(required = false)
+    public ScrapperClient(WebClient.Builder webClientBuilder, String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
-    public void removeChat(long id) {
-        this.webClient.delete()
-            .uri("/tg-chat/%d".formatted(id))
-            .retrieve();
-    }
-
-    public ListLinksResponse getLinks(long id) {
-        return this.webClient.get()
-            .uri("/links")
-            .header("Tg-Chat-Id", String.valueOf(id))
+    public String addChat(long id) {
+        return webClient.post()
+            .uri(DEFAULT_CHAT_PATH.formatted(id))
             .retrieve()
-            .bodyToMono(ListLinksResponse.class)
+            .bodyToMono(String.class)
+            .onErrorResume(e -> Mono.just(e.getMessage()))
             .block();
     }
 
-    public LinkResponse addLink(long id, String link) {
-        String body = """
-            {
-                "link": "%s"
-            }""".formatted(link);
+    public String removeChat(long id) {
+        return webClient.delete()
+            .uri(DEFAULT_CHAT_PATH.formatted(id))
+            .retrieve()
+            .bodyToMono(String.class)
+            .onErrorResume(e -> Mono.just(e.getMessage()))
+            .block();
+    }
+
+    public Mono<ListLinksResponse> getLinks(long id) {
+        return webClient.get()
+            .uri(DEFAULT_LINKS_PATH)
+            .header(DEFAULT_LINKS_HEADER, String.valueOf(id))
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
+            .bodyToMono(ListLinksResponse.class);
+    }
+
+    public Mono<String> addLink(long id, String link) {
+        String body = DEFAULT_LINKS_BODY.formatted(link);
 
         return this.webClient.post()
-            .uri("/links")
-            .header("Tg-Chat-Id", String.valueOf(id))
+            .uri(DEFAULT_LINKS_PATH)
+            .header(DEFAULT_LINKS_HEADER, String.valueOf(id))
             .bodyValue(body)
             .retrieve()
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
             .bodyToMono(LinkResponse.class)
-            .block();
+            .map(response -> response.url().toString());
     }
 
-    public LinkResponse removeLink(long id, String link) {
-        String body = """
-            {
-                "link": "%s"
-            }""".formatted(link);
+    public Mono<String> removeLink(long id, String link) {
+        String body = DEFAULT_LINKS_BODY.formatted(link);
 
         return this.webClient
             .method(HttpMethod.DELETE)
-            .uri("/links")
-            .header("Tg-Chat-Id", String.valueOf(id))
+            .uri(DEFAULT_LINKS_PATH)
+            .header(DEFAULT_LINKS_HEADER, String.valueOf(id))
             .bodyValue(body)
             .retrieve()
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
             .bodyToMono(LinkResponse.class)
-            .block();
+            .map(response -> response.url().toString());
     }
 }
