@@ -1,11 +1,12 @@
 package edu.java.bot;
 
 import edu.java.bot.configuration.ApplicationConfig;
-import edu.java.dto.LinkResponse;
+import edu.java.dto.Link;
 import edu.java.dto.ListLinksResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -21,9 +22,7 @@ public class ScrapperClient {
     private static final String DEFAULT_LINKS_HEADER = "Tg-Chat-Id";
 
     private static final String DEFAULT_LINKS_BODY = """
-            {
-                "link": "%s"
-            }""";
+        { "link": "%s" }""";
 
     @Autowired(required = false)
     public ScrapperClient(WebClient.Builder webClientBuilder, ApplicationConfig config) {
@@ -68,11 +67,12 @@ public class ScrapperClient {
         return this.webClient.post()
             .uri(DEFAULT_LINKS_PATH)
             .header(DEFAULT_LINKS_HEADER, String.valueOf(id))
+            .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
             .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
-            .bodyToMono(LinkResponse.class)
-            .map(response -> response.url().toString());
+            .bodyToMono(Link.class)
+            .map(Link::url);
     }
 
     public Mono<String> removeLink(long id, String link) {
@@ -82,10 +82,11 @@ public class ScrapperClient {
             .method(HttpMethod.DELETE)
             .uri(DEFAULT_LINKS_PATH)
             .header(DEFAULT_LINKS_HEADER, String.valueOf(id))
+            .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
             .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
-            .bodyToMono(LinkResponse.class)
-            .map(response -> response.url().toString());
+            .bodyToMono(Link.class)
+            .map(Link::url);
     }
 }

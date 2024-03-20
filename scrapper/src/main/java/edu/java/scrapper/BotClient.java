@@ -1,10 +1,11 @@
-package edu.java;
+package edu.java.scrapper;
 
-import edu.java.configuration.ApplicationConfig;
 import edu.java.dto.LinkUpdateRequest;
+import edu.java.scrapper.configuration.ApplicationConfig;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -27,8 +28,8 @@ public class BotClient {
         String body = """
             {
                 "id": %d,
-                "url": %s,
-                "description": %s,
+                "url": "%s",
+                "description": "%s",
                 "tgChatIds": [%s]
             }""".formatted(linkUpdateRequest.id(), linkUpdateRequest.url(),
             linkUpdateRequest.description(),
@@ -39,7 +40,8 @@ public class BotClient {
 
         this.webClient.post()
             .uri("/updates")
+            .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
-            .retrieve();
+            .retrieve().toBodilessEntity().block();
     }
 }

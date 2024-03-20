@@ -1,4 +1,4 @@
-package edu.java.controller;
+package edu.java.scrapper.controller;
 
 import edu.java.dto.ApiErrorResponse;
 import java.util.Arrays;

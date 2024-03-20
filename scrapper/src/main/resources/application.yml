@@ -1,7 +1,7 @@
 app:
   scheduler:
     enable: true
-    interval: 10s
+    interval: 30s
     force-check-delay: 10s
   github-base-url: https://api.github.com
   stackoverflow-base-url: https://api.stackexchange.com
@@ -10,6 +10,8 @@ app:
 spring:
   application:
     name: scrapper
+  liquibase:
+    enabled: false
 
 server:
   port: 8080
@@ -20,3 +22,10 @@ logging:
 springdoc:
   swagger-ui:
     path: /swagger-ui
+
+management:
+  address: 127.0.0.1
+  port: 8080
+  endpoint:
+    beans:
+      enabled: true
