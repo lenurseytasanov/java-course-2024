@@ -1,6 +1,6 @@
-package edu.java.stackoverflow;
+package edu.java.scrapper.stackoverflow;
 
-import edu.java.configuration.ApplicationConfig;
+import edu.java.scrapper.configuration.ApplicationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,7 +23,7 @@ public class StackOverflowClient {
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
-    public StackOverflowResponse fetchUpdate(int id) {
+    public StackOverflowResponse fetchUpdate(long id) {
         return this.webClient.get()
             .uri("/2.3/questions/{id}?site=stackoverflow", id)
             .retrieve()

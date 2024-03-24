@@ -3,6 +3,7 @@ package edu.java.bot.commands;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.ScrapperClient;
+import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +36,18 @@ public class TrackCommand implements Command {
         }
         String link = update.message().text().split(" ")[1];
 
-        scrapperClient.addLink(chatId, link).block();
-        return new SendMessage(chatId, "Ресурс %s добавлен.".formatted(link));
+        if (URI.create(link).getHost() == null || (!URI.create(link).getHost().equals("github.com")
+            && !URI.create(link).getHost().equals("stackoverflow.com"))) {
+            return new SendMessage(chatId, "Неизвестный ресурс");
+        }
+
+        String message = "";
+        try {
+            message = "Ресурс %s добавлен".formatted(scrapperClient.addLink(chatId, link).block());
+        } catch (IllegalArgumentException e) {
+            message = "Ресурс уже отслеживается";
+        }
+        return new SendMessage(chatId, message);
     }
 
     @Override
@@ -44,8 +55,8 @@ public class TrackCommand implements Command {
         long chatId = update.message().chat().id();
 
         try {
-            scrapperClient.getLinks(chatId).block();
-        } catch (RuntimeException ex) {
+            scrapperClient.getChat(chatId).block();
+        } catch (IllegalArgumentException ex) {
             return false;
         }
 

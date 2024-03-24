@@ -1,11 +1,12 @@
-package edu.java.controller;
+package edu.java.scrapper.controller;
 
 import edu.java.dto.AddLinkRequest;
-import edu.java.dto.LinkResponse;
+import edu.java.dto.Link;
 import edu.java.dto.ListLinksResponse;
 import edu.java.dto.RemoveLinkRequest;
-import java.net.MalformedURLException;
+import edu.java.scrapper.service.LinkService;
 import java.net.URI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,34 +21,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/links")
 public class LinksController {
 
+    private final LinkService linkService;
+
+    @Autowired
+    public LinksController(LinkService linkService) {
+        this.linkService = linkService;
+    }
+
     @GetMapping
     @ResponseBody
     public ResponseEntity<ListLinksResponse> getLinks(@RequestHeader("Tg-Chat-Id") long tgChatId) {
-        return ResponseEntity.ok(new ListLinksResponse(new LinkResponse[0], 0));
+        Link[] links = linkService.listAll(tgChatId).toArray(new Link[0]);
+        return ResponseEntity.ok(new ListLinksResponse(links, links.length));
     }
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<LinkResponse> addLink(
+    public ResponseEntity<Link> addLink(
         @RequestHeader("Tg-Chat-Id") long tgChatId,
         @RequestBody AddLinkRequest addLinkRequest
     ) {
-        try {
-            return ResponseEntity.ok(new LinkResponse(0, URI.create("").toURL()));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        URI uri = URI.create(addLinkRequest.link());
+        Link link = linkService.add(tgChatId, uri);
+        return ResponseEntity.ok(link);
     }
 
     @DeleteMapping
-    public ResponseEntity<LinkResponse> removeLink(
+    @ResponseBody
+    public ResponseEntity<Link> removeLink(
         @RequestHeader("Tg-Chat-Id") long tgChatId,
         @RequestBody RemoveLinkRequest removeLinkRequest
     ) {
-        try {
-            return ResponseEntity.ok(new LinkResponse(0, URI.create("").toURL()));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        URI uri = URI.create(removeLinkRequest.link());
+        Link link = linkService.remove(tgChatId, uri);
+        return ResponseEntity.ok(link);
     }
 }
