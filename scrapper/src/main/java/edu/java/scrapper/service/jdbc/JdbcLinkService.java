@@ -6,11 +6,10 @@ import edu.java.scrapper.domain.LinkRepository;
 import edu.java.scrapper.domain.TrackingRepository;
 import edu.java.scrapper.service.LinkService;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
 public class JdbcLinkService implements LinkService {
 
     private final LinkRepository linkRepository;
@@ -28,14 +27,14 @@ public class JdbcLinkService implements LinkService {
     @Override
     public Link add(long tgChatId, URI url) {
         Link link = linkRepository.addLink(new Link(null, url.toString(), null, null));
-        trackingRepository.addTracking(tgChatId, link.id());
+        trackingRepository.addTracking(tgChatId, link.getId());
         return link;
     }
 
     @Override
     public Link remove(long tgChatId, URI url) {
         Link link = linkRepository.getLink(url.toString());
-        trackingRepository.removeLink(tgChatId, link.id());
+        trackingRepository.removeLink(tgChatId, link.getId());
         linkRepository.removeLink(url.toString());
         return link;
     }
@@ -46,8 +45,8 @@ public class JdbcLinkService implements LinkService {
     }
 
     @Override
-    public Collection<Link> listAllByCheck() {
-        return linkRepository.findByLastCheck(config.scheduler().forceCheckDelay());
+    public Collection<Link> listAllByCheck(Duration forceCheckDelay) {
+        return linkRepository.findByLastCheck(forceCheckDelay);
     }
 
     @Override

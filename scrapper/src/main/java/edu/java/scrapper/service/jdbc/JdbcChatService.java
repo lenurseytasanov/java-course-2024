@@ -4,10 +4,9 @@ import edu.java.scrapper.domain.ChatRepository;
 import edu.java.scrapper.domain.TrackingRepository;
 import edu.java.scrapper.service.ChatService;
 import java.util.Collection;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
 public class JdbcChatService implements ChatService {
 
     private final ChatRepository chatRepository;
@@ -25,8 +24,15 @@ public class JdbcChatService implements ChatService {
     }
 
     @Override
+    public void get(long id) {
+        List<Long> chatIds = chatRepository.findAll();
+        chatIds.indexOf(id);
+    }
+
+    @Override
     public void unregister(long id) {
-        chatRepository.addChat(id);
+        trackingRepository.findAllLinks(id).forEach(link -> trackingRepository.removeLink(id, link.getId()));
+        chatRepository.removeChat(id);
     }
 
     @Override

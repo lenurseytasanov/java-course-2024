@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class JdbcLinkTest extends IntegrationTest {
+public class JdbcTest extends IntegrationTest {
     @Autowired
     private LinkRepository linkRepository;
     @Autowired
@@ -54,7 +54,7 @@ public class JdbcLinkTest extends IntegrationTest {
         List<Link> data1 = linkRepository.findAll();
 
         // Assert
-        assertEquals(url, data0.getFirst().url());
+        assertEquals(url, data0.getFirst().getUrl());
         assertEquals(0, data1.size());
     }
 }

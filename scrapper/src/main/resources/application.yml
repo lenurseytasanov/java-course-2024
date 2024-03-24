@@ -6,12 +6,17 @@ app:
   github-base-url: https://api.github.com
   stackoverflow-base-url: https://api.stackexchange.com
   bot-client-base-url: http://localhost:8090
+  database-access-type: jpa
 
 spring:
   application:
     name: scrapper
   liquibase:
     enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/scrapper
+    username: postgres
+    password: postgres
 
 server:
   port: 8080

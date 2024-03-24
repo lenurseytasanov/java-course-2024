@@ -7,7 +7,7 @@ create table if not exists Chat
 create table if not exists Link
 (
     id bigint generated always as identity,
-    url text not null,
+    url text unique not null,
     updated_at timestamp with time zone not null,
     checked_at timestamp with time zone not null,
     primary key (id)

@@ -40,7 +40,7 @@ public class LinkRepository {
             Timestamp timestamp = Timestamp.valueOf(
                 OffsetDateTime.now().atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
             );
-            ps.setString(1, link.url());
+            ps.setString(1, link.getUrl());
             ps.setTimestamp(2, timestamp);
             ps.setTimestamp(PARAMETER_INDEX, timestamp);
             return ps;

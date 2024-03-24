@@ -30,7 +30,12 @@ public class StartCommand implements Command {
     public SendMessage handle(Update update) {
         long chatId = update.message().chat().id();
 
-        String message = scrapperClient.addChat(chatId);
+        String message = "";
+        try {
+            message = "Чат %d зарегистрирован".formatted(scrapperClient.addChat(chatId).block());
+        } catch (IllegalArgumentException e) {
+            message = "Чат уже существует";
+        }
 
         return new SendMessage(chatId, message);
     }

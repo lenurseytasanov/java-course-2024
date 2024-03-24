@@ -3,11 +3,11 @@ package edu.java.bot.commands;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.ScrapperClient;
+import edu.java.dto.Link;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 @Component
 public class ListCommand implements Command {
@@ -33,11 +33,10 @@ public class ListCommand implements Command {
         long chatId = update.message().chat().id();
 
         String message = Arrays.stream(scrapperClient.getLinks(chatId)
-            .onErrorResume(RuntimeException.class, ex -> Mono.empty())
             .block()
             .links())
-            .map(link -> link.url().toString())
-            .collect(Collectors.joining());
+            .map(Link::getUrl)
+            .collect(Collectors.joining(", "));
 
         return new SendMessage(chatId, "Отслеживаются: %s".formatted(message));
     }
@@ -47,8 +46,8 @@ public class ListCommand implements Command {
         long chatId = update.message().chat().id();
 
         try {
-            scrapperClient.getLinks(chatId).block();
-        } catch (RuntimeException ex) {
+            scrapperClient.getChat(chatId).block();
+        } catch (IllegalArgumentException ex) {
             return false;
         }
 

@@ -34,22 +34,28 @@ public class ScrapperClient {
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
-    public String addChat(long id) {
+    public Mono<Long> addChat(long id) {
         return webClient.post()
             .uri(DEFAULT_CHAT_PATH.formatted(id))
             .retrieve()
-            .bodyToMono(String.class)
-            .onErrorResume(e -> Mono.just(e.getMessage()))
-            .block();
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(IllegalArgumentException::new))
+            .bodyToMono(Long.class);
     }
 
-    public String removeChat(long id) {
+    public Mono<Long> getChat(long id) {
+        return webClient.get()
+            .uri(DEFAULT_CHAT_PATH.formatted(id))
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(IllegalArgumentException::new))
+            .bodyToMono(Long.class);
+    }
+
+    public Mono<Long> removeChat(long id) {
         return webClient.delete()
             .uri(DEFAULT_CHAT_PATH.formatted(id))
             .retrieve()
-            .bodyToMono(String.class)
-            .onErrorResume(e -> Mono.just(e.getMessage()))
-            .block();
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(IllegalArgumentException::new))
+            .bodyToMono(Long.class);
     }
 
     public Mono<ListLinksResponse> getLinks(long id) {
@@ -57,7 +63,7 @@ public class ScrapperClient {
             .uri(DEFAULT_LINKS_PATH)
             .header(DEFAULT_LINKS_HEADER, String.valueOf(id))
             .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(IllegalArgumentException::new))
             .bodyToMono(ListLinksResponse.class);
     }
 
@@ -70,9 +76,9 @@ public class ScrapperClient {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(IllegalArgumentException::new))
             .bodyToMono(Link.class)
-            .map(Link::url);
+            .map(Link::getUrl);
     }
 
     public Mono<String> removeLink(long id, String link) {
@@ -85,8 +91,8 @@ public class ScrapperClient {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(body)
             .retrieve()
-            .onStatus(HttpStatusCode::isError, response -> Mono.error(RuntimeException::new))
+            .onStatus(HttpStatusCode::isError, response -> Mono.error(IllegalArgumentException::new))
             .bodyToMono(Link.class)
-            .map(Link::url);
+            .map(Link::getUrl);
     }
 }

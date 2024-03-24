@@ -1,7 +1,9 @@
 package edu.java.scrapper;
 
 import edu.java.dto.Link;
+import edu.java.dto.LinkUpdateRequest;
 import edu.java.dto.UpdateResponse;
+import edu.java.scrapper.configuration.ApplicationConfig;
 import edu.java.scrapper.github.GitHubClient;
 import edu.java.scrapper.service.ChatService;
 import edu.java.scrapper.service.LinkService;
@@ -30,21 +32,24 @@ public class LinkUpdaterScheduler {
     @Autowired
     private BotClient botClient;
 
+    @Autowired
+    private ApplicationConfig config;
+
     private static final Logger LOGGER = LogManager.getLogger();
 
     @Scheduled(fixedDelayString = "#{ @scheduler.interval() }")
     public void update() {
         LOGGER.info("get update");
 
-        Collection<Link> links = linkService.listAllByCheck();
-//        links.stream()
-//            .peek(link -> linkService.updateCheckTime(link.id()))
-//            .filter(link -> parseLink(URI.create(link.url())).getUpdatedAt().isAfter(link.updatedAt()))
-//            .peek(link -> linkService.updateStateTime(link.id()))
-//            .forEach(link -> botClient.sendUpdate(new LinkUpdateRequest(
-//                link.id(), link.url(), "source updated",
-//                chatService.listAllChatIds(link.id()).stream().mapToLong(e -> e).toArray()
-//            )));
+        Collection<Link> links = linkService.listAllByCheck(config.scheduler().forceCheckDelay());
+        links.stream()
+            .peek(link -> linkService.updateCheckTime(link.getId()))
+            .filter(link -> parseLink(URI.create(link.getUrl())).getUpdatedAt().isAfter(link.getUpdatedAt()))
+            .peek(link -> linkService.updateStateTime(link.getId()))
+            .forEach(link -> botClient.sendUpdate(new LinkUpdateRequest(
+                link.getId(), link.getUrl(), "source updated",
+                chatService.listAllChatIds(link.getId()).stream().mapToLong(e -> e).toArray()
+            )));
     }
 
     private UpdateResponse parseLink(URI uri) {

@@ -38,11 +38,16 @@ public class TrackCommand implements Command {
 
         if (URI.create(link).getHost() == null || (!URI.create(link).getHost().equals("github.com")
             && !URI.create(link).getHost().equals("stackoverflow.com"))) {
-            return new SendMessage(chatId, "Некорректная ссылка");
+            return new SendMessage(chatId, "Неизвестный ресурс");
         }
 
-        scrapperClient.addLink(chatId, link).block();
-        return new SendMessage(chatId, "Ресурс %s добавлен.".formatted(link));
+        String message = "";
+        try {
+            message = "Ресурс %s добавлен".formatted(scrapperClient.addLink(chatId, link).block());
+        } catch (IllegalArgumentException e) {
+            message = "Ресурс уже отслеживается";
+        }
+        return new SendMessage(chatId, message);
     }
 
     @Override
@@ -50,8 +55,8 @@ public class TrackCommand implements Command {
         long chatId = update.message().chat().id();
 
         try {
-            scrapperClient.getLinks(chatId).block();
-        } catch (RuntimeException ex) {
+            scrapperClient.getChat(chatId).block();
+        } catch (IllegalArgumentException ex) {
             return false;
         }
 

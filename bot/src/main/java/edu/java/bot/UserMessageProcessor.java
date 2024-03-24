@@ -12,9 +12,9 @@ public class UserMessageProcessor {
 
     private final Map<String, Command> commands;
 
-    public static final String UNKNOWN_COMMAND = "Неизвестная команда";
+    private static final String UNKNOWN_COMMAND = "Неизвестная команда";
 
-    public static final String UNAUTHORISED = "Чат не зарегистрирован";
+    private static final String UNAUTHORISED = "Чат не зарегистрирован";
 
     @Autowired
     public UserMessageProcessor(Map<String, Command> commands) {

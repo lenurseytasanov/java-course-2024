@@ -2,6 +2,7 @@ package edu.java.scrapper.service;
 
 import edu.java.dto.Link;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Collection;
 
 public interface LinkService {
@@ -12,7 +13,7 @@ public interface LinkService {
 
     Collection<Link> listAll(long tgChatId);
 
-    Collection<Link> listAllByCheck();
+    Collection<Link> listAllByCheck(Duration forceCheckDelay);
 
     void updateCheckTime(long linkId);
 

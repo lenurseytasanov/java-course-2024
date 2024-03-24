@@ -16,8 +16,15 @@ public record ApplicationConfig(
     @NotNull
     String stackoverflowBaseUrl,
     @NotNull
-    String botClientBaseUrl
+    String botClientBaseUrl,
+
+    @NotNull
+    AccessType databaseAccessType
 ) {
     public record Scheduler(boolean enable, @NotNull Duration interval, @NotNull Duration forceCheckDelay) {
+    }
+
+    public enum AccessType {
+        JDBC, JPA
     }
 }

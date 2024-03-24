@@ -35,8 +35,13 @@ public class UntrackCommand implements Command {
         }
         String link = update.message().text().split(" ")[1];
 
-        scrapperClient.removeLink(chatId, link).block();
-        return new SendMessage(chatId, "Ресурс %s удален.".formatted(link));
+        String message = "";
+        try {
+            message = "Ресурс %s удален".formatted(scrapperClient.removeLink(chatId, link).block());
+        } catch (IllegalArgumentException e) {
+            message = "Ресурс не отслеживается";
+        }
+        return new SendMessage(chatId, message);
     }
 
     @Override
@@ -44,8 +49,8 @@ public class UntrackCommand implements Command {
         long chatId = update.message().chat().id();
 
         try {
-            scrapperClient.getLinks(chatId).block();
-        } catch (RuntimeException ex) {
+            scrapperClient.getChat(chatId).block();
+        } catch (IllegalArgumentException ex) {
             return false;
         }
 
